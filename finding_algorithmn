@@ -1,0 +1,129 @@
+Function get_rn(ByVal record, ByVal n)          'record = (r1,c1)(r2,c2)(r3,c3)...(rn,cn)W  //n = last turn of that game. W = winner (흑/백/무).
+    If record = "" Then
+        get_rn = 9
+    Else
+        If Mid(record, 5 * n - 3, 1) = "" Then          'if that game end before 60th turn, Mid(record, 5 * n - 3, 1) = "".
+            get_rn = 9
+        Else
+            get_rn = Mid(record, 5 * n - 3, 1)
+        End If
+    End If
+End Function
+
+
+Function get_cn(ByVal record, ByVal n)
+    If record = "" Then
+        get_cn = 9
+    Else
+        If Mid(record, 5 * n - 1, 1) = "" Then
+            get_cn = 9
+        Else
+            get_cn = Mid(record, 5 * n - 1, 1)
+        End If
+    End If
+End Function
+
+
+
+Function check_num(ByVal r, ByVal c)          'at the board, this become 1 to 64. so this make easy to compare two record.
+    check_num = r * 8 + c - 8
+End Function
+
+
+
+Function start_or_end_code(ByVal page, ByVal c, ByVal r)
+    start_or_end_code = r + 1048576 * (c - 1) + 1048576# * 65536 * (page - 1)
+End Function
+
+
+
+Function r_from_code(ByVal code)
+    r_from_code = code - WorksheetFunction.Floor(code, 1048576#)
+End Function
+
+
+
+Function c_from_code(ByVal code)
+    c_from_code = (WorksheetFunction.Floor((code - WorksheetFunction.Floor(code, 68719476736#)), 1048576#) / 1048576#) + 1
+End Function
+
+
+
+Function page_from_code(ByVal code)
+    page_from_code = (WorksheetFunction.Floor(code, 68719476736#) / 68719476736#) + 1
+End Function
+
+
+
+
+Sub log_line(ByVal data)
+    Dim rep As Double, sp, sr, sc, rep_end As Double, check_rep, cont_rec, recent_rec, ep, er, ec, rep_start As Double, start_checking, end_checking, tmp
+    
+    sp = Sheets("board_data").Cells(3, 21)          'start page
+    sc = Sheets("board_data").Cells(4, 21)          'start column
+    sr = Sheets("board_data").Cells(5, 21)          'start row
+    
+    ep = Sheets("board_data").Cells(3, 23)          'end page
+    ec = Sheets("board_data").Cells(4, 23)          'end column
+    er = Sheets("board_data").Cells(5, 23)          'end row
+    
+    recent_rec = Sheets("board_data").Cells(15, 61)          'recent record
+    
+    rep_start = Sheets("board_data").Cells(6, 21)          'code of start.
+    rep_end = Sheets("board_data").Cells(6, 23)          'code of end.
+    rep = rep_start
+    
+    check_rep = Sheets("board_data").Cells(5, 15)          'now turn
+    start_checking = 0
+    end_checking = 0
+    
+    If Not rep_start = rep_end Then          'if they are same, that means this record is new thing.
+    
+        Do While Not rep > rep_end          'repeat start to end
+        
+            cont_rec = Sheets("vslog_" & page_from_code(rep)).Cells(r_from_code(rep), c_from_code(rep))          'saved record to contrast.
+            
+            
+            If check_num(get_rn(cont_rec, check_rep), get_cn(cont_rec, check_rep)) = check_num(get_rn(recent_rec, check_rep), get_cn(recent_rec, check_rep)) Then
+                If start_checking = 0 Then
+                    Sheets("board_data").Cells(3, 21) = page_from_code(rep)
+                    Sheets("board_data").Cells(4, 21) = c_from_code(rep)
+                    Sheets("board_data").Cells(5, 21) = r_from_code(rep)
+                    Sheets("board_data").Cells(6, 21) = rep
+                    Sheets("board_data").Cells(3, 25) = 0
+                    start_checking = 1
+                End If
+            ElseIf check_num(get_rn(cont_rec, check_rep), get_cn(cont_rec, check_rep)) > check_num(get_rn(recent_rec, check_rep), get_cn(recent_rec, check_rep)) Then          '
+                    Sheets("board_data").Cells(3, 23) = page_from_code(rep)
+                    Sheets("board_data").Cells(4, 23) = c_from_code(rep)
+                    Sheets("board_data").Cells(5, 23) = r_from_code(rep)
+                    Sheets("board_data").Cells(6, 23) = rep
+                    end_checking = 1
+                Exit Do
+            End If
+            
+            rep = rep + 1
+        Loop
+        
+
+        If start_checking = 0 Then
+            Sheets("board_data").Cells(3, 25) = 1
+            
+            If end_checking = 1 Then
+                Sheets("board_data").Cells(3, 21) = Sheets("board_data").Cells(3, 23)
+                Sheets("board_data").Cells(4, 21) = Sheets("board_data").Cells(4, 23)
+                Sheets("board_data").Cells(5, 21) = Sheets("board_data").Cells(5, 23)
+                Sheets("board_data").Cells(6, 21) = Sheets("board_data").Cells(6, 23)
+            Else
+                Sheets("board_data").Cells(3, 23) = Sheets("board_data").Cells(3, 21)
+                Sheets("board_data").Cells(4, 23) = Sheets("board_data").Cells(4, 21)
+                Sheets("board_data").Cells(5, 23) = Sheets("board_data").Cells(5, 21)
+                Sheets("board_data").Cells(6, 23) = Sheets("board_data").Cells(6, 21)
+            End If
+            
+            
+        End If
+
+    End If
+    
+End Sub
