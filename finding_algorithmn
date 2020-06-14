@@ -56,74 +56,122 @@ End Function
 
 
 
-Sub log_line(ByVal data)
-    Dim rep As Double, sp, sr, sc, rep_end As Double, check_rep, cont_rec, recent_rec, ep, er, ec, rep_start As Double, start_checking, end_checking, tmp
+Sub log_line(ByVal recent_rec)
+    Dim rep As Double, sp, sr, sc, rep_end As Double, check_rep, cont_rec, ep, er, ec, rep_start As Double, start_checking, end_checking, tmp, rep_2, cont_rec_s, cont_rec_e
     
-    sp = Sheets("board_data").Cells(3, 21)          'start page
-    sc = Sheets("board_data").Cells(4, 21)          'start column
-    sr = Sheets("board_data").Cells(5, 21)          'start row
+    sp = Sheets("board_data").Cells(3, 21)
+    sc = Sheets("board_data").Cells(4, 21)
+    sr = Sheets("board_data").Cells(5, 21)
     
-    ep = Sheets("board_data").Cells(3, 23)          'end page
-    ec = Sheets("board_data").Cells(4, 23)          'end column
-    er = Sheets("board_data").Cells(5, 23)          'end row
+    ep = Sheets("board_data").Cells(3, 23)
+    ec = Sheets("board_data").Cells(4, 23)
+    er = Sheets("board_data").Cells(5, 23)
     
-    recent_rec = Sheets("board_data").Cells(15, 61)          'recent record
-    
-    rep_start = Sheets("board_data").Cells(6, 21)          'code of start.
-    rep_end = Sheets("board_data").Cells(6, 23)          'code of end.
+    rep_start = Sheets("board_data").Cells(6, 21)
+    rep_end = Sheets("board_data").Cells(6, 23)
     rep = rep_start
     
-    check_rep = Sheets("board_data").Cells(5, 15)          'now turn
+    cont_rec_s = Sheets("vslog_" & page_from_code(rep_start)).Cells(r_from_code(rep_start), c_from_code(rep_start))
+    cont_rec_e = Sheets("vslog_" & page_from_code(rep_end)).Cells(r_from_code(rep_end), c_from_code(rep_end))
+    
+    check_rep = Sheets("board_data").Cells(5, 15)
     start_checking = 0
     end_checking = 0
     
-    If Not rep_start = rep_end Then          'if they are same, that means this record is new thing.
-    
-        Do While Not rep > rep_end          'repeat start to end
+    If Sheets("board_data").Cells(3, 25) = 0 Then
         
-            cont_rec = Sheets("vslog_" & page_from_code(rep)).Cells(r_from_code(rep), c_from_code(rep))          'saved record to contrast.
+        If check_num(get_rn(cont_rec_s, check_rep), get_cn(cont_rec_s, check_rep)) > check_num(get_rn(recent_rec, check_rep), get_cn(recent_rec, check_rep)) Then
+                    
+            rep = rep_start
+                    
+            Sheets("board_data").Cells(3, 21) = page_from_code(rep)
+            Sheets("board_data").Cells(4, 21) = c_from_code(rep)
+            Sheets("board_data").Cells(5, 21) = r_from_code(rep)
+            Sheets("board_data").Cells(6, 21) = rep
             
+            Sheets("board_data").Cells(3, 23) = page_from_code(rep)
+            Sheets("board_data").Cells(4, 23) = c_from_code(rep)
+            Sheets("board_data").Cells(5, 23) = r_from_code(rep)
+            Sheets("board_data").Cells(6, 23) = rep
             
-            If check_num(get_rn(cont_rec, check_rep), get_cn(cont_rec, check_rep)) = check_num(get_rn(recent_rec, check_rep), get_cn(recent_rec, check_rep)) Then
-                If start_checking = 0 Then
-                    Sheets("board_data").Cells(3, 21) = page_from_code(rep)
-                    Sheets("board_data").Cells(4, 21) = c_from_code(rep)
-                    Sheets("board_data").Cells(5, 21) = r_from_code(rep)
-                    Sheets("board_data").Cells(6, 21) = rep
-                    Sheets("board_data").Cells(3, 25) = 0
-                    start_checking = 1
-                End If
-            ElseIf check_num(get_rn(cont_rec, check_rep), get_cn(cont_rec, check_rep)) > check_num(get_rn(recent_rec, check_rep), get_cn(recent_rec, check_rep)) Then          '
-                    Sheets("board_data").Cells(3, 23) = page_from_code(rep)
-                    Sheets("board_data").Cells(4, 23) = c_from_code(rep)
-                    Sheets("board_data").Cells(5, 23) = r_from_code(rep)
-                    Sheets("board_data").Cells(6, 23) = rep
-                    end_checking = 1
-                Exit Do
-            End If
-            
-            rep = rep + 1
-        Loop
-        
-
-        If start_checking = 0 Then
             Sheets("board_data").Cells(3, 25) = 1
             
-            If end_checking = 1 Then
-                Sheets("board_data").Cells(3, 21) = Sheets("board_data").Cells(3, 23)
-                Sheets("board_data").Cells(4, 21) = Sheets("board_data").Cells(4, 23)
-                Sheets("board_data").Cells(5, 21) = Sheets("board_data").Cells(5, 23)
-                Sheets("board_data").Cells(6, 21) = Sheets("board_data").Cells(6, 23)
+        ElseIf check_num(get_rn(cont_rec_e, check_rep), get_cn(cont_rec_e, check_rep)) < check_num(get_rn(recent_rec, check_rep), get_cn(recent_rec, check_rep)) Then
+            
+            rep = rep_end + 1
+                    
+            Sheets("board_data").Cells(3, 21) = page_from_code(rep)
+            Sheets("board_data").Cells(4, 21) = c_from_code(rep)
+            Sheets("board_data").Cells(5, 21) = r_from_code(rep)
+            Sheets("board_data").Cells(6, 21) = rep
+            
+            Sheets("board_data").Cells(3, 23) = page_from_code(rep)
+            Sheets("board_data").Cells(4, 23) = c_from_code(rep)
+            Sheets("board_data").Cells(5, 23) = r_from_code(rep)
+            Sheets("board_data").Cells(6, 23) = rep
+            
+            Sheets("board_data").Cells(3, 25) = 1
+            
+        Else
+            
+            cont_rec = Sheets("vslog_" & page_from_code(rep)).Cells(r_from_code(rep), c_from_code(rep))
+            
+            Do While Not check_num(get_rn(cont_rec, check_rep), get_cn(cont_rec, check_rep)) > check_num(get_rn(recent_rec, check_rep), get_cn(recent_rec, check_rep))
+                
+                If check_num(get_rn(cont_rec, check_rep), get_cn(cont_rec, check_rep)) = check_num(get_rn(recent_rec, check_rep), get_cn(recent_rec, check_rep)) Then
+                    
+                    If start_checking = 0 Then
+                    
+                        Sheets("board_data").Cells(3, 21) = page_from_code(rep)
+                        Sheets("board_data").Cells(4, 21) = c_from_code(rep)
+                        Sheets("board_data").Cells(5, 21) = r_from_code(rep)
+                        Sheets("board_data").Cells(6, 21) = rep
+                        
+                        start_checking = 1
+                        
+                    End If
+                    
+                End If
+                
+                rep = rep + 1
+                
+                If rep > rep_end Then
+                
+                    Exit Do
+                    
+                Else
+                
+                    cont_rec = Sheets("vslog_" & page_from_code(rep)).Cells(r_from_code(rep), c_from_code(rep))
+                    
+                End If
+                
+            Loop
+            
+            If start_checking = 1 Then
+            
+                Sheets("board_data").Cells(3, 23) = page_from_code(max(rep - 1, rep_start))
+                Sheets("board_data").Cells(4, 23) = c_from_code(max(rep - 1, rep_start))
+                Sheets("board_data").Cells(5, 23) = r_from_code(max(rep - 1, rep_start))
+                Sheets("board_data").Cells(6, 23) = max(rep - 1, rep_start)
+            
             Else
-                Sheets("board_data").Cells(3, 23) = Sheets("board_data").Cells(3, 21)
-                Sheets("board_data").Cells(4, 23) = Sheets("board_data").Cells(4, 21)
-                Sheets("board_data").Cells(5, 23) = Sheets("board_data").Cells(5, 21)
-                Sheets("board_data").Cells(6, 23) = Sheets("board_data").Cells(6, 21)
+                
+                Sheets("board_data").Cells(3, 21) = page_from_code(rep)
+                Sheets("board_data").Cells(4, 21) = c_from_code(rep)
+                Sheets("board_data").Cells(5, 21) = r_from_code(rep)
+                Sheets("board_data").Cells(6, 21) = rep
+                
+                Sheets("board_data").Cells(3, 23) = page_from_code(rep)
+                Sheets("board_data").Cells(4, 23) = c_from_code(rep)
+                Sheets("board_data").Cells(5, 23) = r_from_code(rep)
+                Sheets("board_data").Cells(6, 23) = rep
+                
+                Sheets("board_data").Cells(3, 25) = 1
+                
             End If
             
-            
         End If
-
+        
     End If
     
 End Sub
